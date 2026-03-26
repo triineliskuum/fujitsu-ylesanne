@@ -36,8 +36,8 @@ public class WeatherImportService {
             NodeList stations = root.getElementsByTagName("station");
 
             List<String> allowedStations = List.of(
-                    "Tallinn-Harku",
-                    "Tartu-Tõravere",
+                    "Tallinn–Harku",
+                    "Tartu–Tõravere",
                     "Pärnu"
             );
 
