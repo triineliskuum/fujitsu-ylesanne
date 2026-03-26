@@ -56,8 +56,8 @@ public class DeliveryFeeService {
 
     private String mapCityToStationName(City city) {
         return switch (city) {
-            case TALLINN -> "Tallinn–Harku";
-            case TARTU ->  "Tartu–Tõravere";
+            case TALLINN -> "Tallinn-Harku";
+            case TARTU ->  "Tartu-Tõravere";
             case PARNU ->  "Pärnu";
         };
     }
@@ -88,7 +88,7 @@ public class DeliveryFeeService {
         if (windSpeed > 20) {
             throw new ForbiddenVehicleException("Usage of selected vehicle type is forbidden");
         }
-        if (windspeed >= 10 && windSpeed <= 20) {
+        if (windSpeed >= 10 && windSpeed <= 20) {
             return 0.5;
         }
         return 0.0;
