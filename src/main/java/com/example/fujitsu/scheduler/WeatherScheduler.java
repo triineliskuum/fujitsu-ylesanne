@@ -5,6 +5,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * Scheduler for periodic weather data import.
+ */
 @Component
 public class WeatherScheduler {
 
@@ -14,6 +17,10 @@ public class WeatherScheduler {
         this.weatherImportService = weatherImportService;
     }
 
+    /**
+     * Imports weather data automatically based on the cron expression
+     * configured in application properties.
+     */
     @Scheduled(cron = "${weather.cron}")
     public void importWeatherDataOnSchedule() {
         RestTemplate restTemplate = new RestTemplate();
@@ -24,9 +31,6 @@ public class WeatherScheduler {
 
         if (xml != null && !xml.isBlank()) {
             weatherImportService.importWeatherData(xml);
-            System.out.println("Scheduled weather import completed.");
-        } else  {
-            System.out.println("Scheduled weather import failed: XML response was empty.");
         }
     }
 }

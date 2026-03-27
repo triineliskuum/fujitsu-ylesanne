@@ -1,5 +1,8 @@
 package com.example.fujitsu.dto;
 
+/**
+ * DTO for delivery fee response.
+ */
 public class DeliveryFeeResponse {
 
     private String city;

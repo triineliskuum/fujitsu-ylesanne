@@ -10,11 +10,19 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 
+/**
+ * Service for parsing weather data from XML and storing it in the database.
+ */
 @Service
 public class WeatherImportService {
+
+    private static final List<String> ALLOWED_STATIONS = List.of(
+            "Tallinn-Harku",
+            "Tartu-Tõravere",
+            "Pärnu"
+    );
 
     private final WeatherRepository weatherRepository;
 
@@ -22,11 +30,16 @@ public class WeatherImportService {
         this.weatherRepository = weatherRepository;
     }
 
+    /**
+     * Parses XML weather data and saves required station observations.
+     *
+     * @param xmlContent XML response from external weather service
+     */
     public void importWeatherData(String xmlContent) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(new InputSource(new StringReader(xmlContent)));
+            org.w3c.dom.Document document = builder.parse(new InputSource(new StringReader(xmlContent)));
 
             Element root = document.getDocumentElement();
 
@@ -34,12 +47,6 @@ public class WeatherImportService {
             LocalDateTime observationTime = parseTimestamp(timestampValue);
 
             NodeList stations = root.getElementsByTagName("station");
-
-            List<String> allowedStations = List.of(
-                    "Tallinn-Harku",
-                    "Tartu-Tõravere",
-                    "Pärnu"
-            );
 
             for (int i = 0; i < stations.getLength(); i++) {
                 Node node = stations.item(i);
@@ -51,7 +58,7 @@ public class WeatherImportService {
                 Element stationElement = (Element) node;
 
                 String stationName = getTagValue(stationElement, "name");
-                if (!allowedStations.contains(stationName)) {
+                if (!ALLOWED_STATIONS.contains(stationName)) {
                     continue;
                 }
 
@@ -60,16 +67,11 @@ public class WeatherImportService {
                 Double windSpeed = parseDouble(getTagValue(stationElement, "windspeed"));
                 String weatherPhenomenon = getTagValue(stationElement, "phenomenon");
 
-                System.out.println("Station: " + stationName);
-                System.out.println("WMO: " + wmoCode);
-                System.out.println("Air temp: " + airTemperature);
-                System.out.println("Wind speed: " + windSpeed);
-                System.out.println("Phenomenon: " + weatherPhenomenon);
-                System.out.println("Observation time: " + observationTime);
-                System.out.println("---------------");
-
-                if (stationName == null || wmoCode == null || airTemperature == null || windSpeed == null || observationTime == null) {
-                    System.out.println("Skipping station because of null required field: " + stationName);
+                if (stationName == null
+                        || wmoCode == null
+                        || airTemperature == null
+                        || windSpeed == null
+                        || observationTime == null) {
                     continue;
                 }
 
@@ -88,6 +90,13 @@ public class WeatherImportService {
         }
     }
 
+    /**
+     * Returns text content of the given XML tag.
+     *
+     * @param parent parent XML element
+     * @param tagName tag name to search for
+     * @return tag value or null if tag is missing
+     */
     private String getTagValue(Element parent, String tagName) {
         NodeList nodeList = parent.getElementsByTagName(tagName);
         if (nodeList.getLength() == 0 || nodeList.item(0) == null) {
@@ -96,6 +105,12 @@ public class WeatherImportService {
         return nodeList.item(0).getTextContent();
     }
 
+    /**
+     * Parses a numeric value from XML.
+     *
+     * @param value string value from XML
+     * @return parsed double value or null if value is missing
+     */
     private Double parseDouble(String value) {
         if (value == null || value.isBlank()) {
             return null;
@@ -103,6 +118,12 @@ public class WeatherImportService {
         return Double.parseDouble(value);
     }
 
+    /**
+     * Parses UNIX timestamp value from XML into LocalDateTime.
+     *
+     * @param timestampValue timestamp value from XML root attribute
+     * @return parsed observation time or current time if timestamp is missing
+     */
     private LocalDateTime parseTimestamp(String timestampValue) {
         if (timestampValue == null || timestampValue.isBlank()) {
             return LocalDateTime.now();

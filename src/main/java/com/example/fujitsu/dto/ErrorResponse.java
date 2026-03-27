@@ -1,5 +1,8 @@
 package com.example.fujitsu.dto;
 
+/**
+ * DTO for error response.
+ */
 public class ErrorResponse {
 
     private String error;

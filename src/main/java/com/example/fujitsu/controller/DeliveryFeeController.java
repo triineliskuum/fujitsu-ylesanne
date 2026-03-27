@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller for delivery fee requests.
+ */
 @RestController
 public class DeliveryFeeController {
 
@@ -17,8 +20,16 @@ public class DeliveryFeeController {
         this.deliveryFeeService = deliveryFeeService;
     }
 
+    /**
+     * Returns delivery fee based on city and vehicle type.
+     * Endpoint: GET /delivery-fee
+     *
+     * @param city selected city (TALLINN, TARTU, PARNU)
+     * @param vehicleType selected vehicle type (CAR, SCOOTER, BIKE)
+     * @return response containing calculated delivery fee
+     */
     @GetMapping("/delivery-fee")
-    public DeliveryFeeResponse getDeliveryFee(
+    public DeliveryFeeResponse calculateDeliveryFee(
             @RequestParam City city,
             @RequestParam VehicleType vehicleType
     ) {

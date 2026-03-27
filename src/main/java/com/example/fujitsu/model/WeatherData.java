@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity representing weather observation data.
+ */
 @Entity
 @Table(name = "weather_data")
 public class WeatherData {
@@ -31,7 +34,6 @@ public class WeatherData {
 
     public WeatherData() {
     }
-
 
     public WeatherData(String stationName, String wmoCode, Double airTemperature, Double windSpeed,
                        String weatherPhenomenon, LocalDateTime observationTime) {
