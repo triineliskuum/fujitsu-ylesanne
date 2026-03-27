@@ -55,8 +55,8 @@ Imported stations:
 Clone the repository
 
 ```bash
-git clone <your-repo-url>
-cd <fujitsu-task>
+git clone https://github.com/triineliskuum/fujitsu-ylesanne
+cd fujitsu-task
 ```
 
 ### 1. Start the application
