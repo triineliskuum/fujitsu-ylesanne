@@ -1,34 +1,42 @@
-# Fujitsu Java Programming Internship Task
-
-This project is a Spring Boot application built as a solution for the Fujitsu Java Programming Internship Task.
+# Fujitsu Java Programming Internship Task – Delivery Fee Service
 
 ## Overview
 
-The application calculates delivery fees for food couriers based on:
+This project is a Spring Boot backend service that calculates delivery fees based on city, vehicle type, and real-time weather conditions.
 
-* city
-* vehicle type
-* latest weather conditions
+The application periodically imports weather data from an external XML source, stores it in a database, and applies business rules to calculate delivery fees.
 
-It also imports weather data from the Estonian Environment Agency XML feed and stores the observation history in an H2 database.
+The solution is designed with clean architecture principles and focuses on reliability, testability, and maintainability.
 
-## Technologies Used
-
-* Java 21
-* Spring Boot
-* Spring Web
-* Spring Data JPA
-* H2 Database
-* Gradle
+---
 
 ## Features
 
-* Weather data import from XML API
-* Scheduled weather import using configurable cron expression
-* H2 database storage for weather observation history
-* Delivery fee calculation based on business rules
-* REST API for requesting delivery fees
-* Global exception handling for invalid input and forbidden vehicle usage
+- Weather data import from external XML source
+- Scheduled automatic data updates (cron)
+- H2 in-memory database
+- Delivery fee calculation based on:
+  - City
+  - Vehicle type
+  - Air temperature
+  - Wind speed
+  - Weather phenomenon
+- REST API endpoint for fee calculation
+- Global exception handling
+- Unit and controller tests
+
+---
+
+## Technologies Used
+
+- Java 21
+- Spring Boot
+- Spring Web
+- Spring Data JPA
+- H2 Database
+- JUnit 5
+- MockMvc
+- Gradle
 
 ## Weather Data Source
 
@@ -44,28 +52,77 @@ Imported stations:
 
 ## How to Run
 
-1. Clone the repository
-2. Open the project in IntelliJ IDEA
-3. Make sure Java 21 is installed and configured
-4. Run the application
+Clone the repository
 
-The application starts on:
+```bash
+git clone https://github.com/triineliskuum/fujitsu-ylesanne
+cd fujitsu-task
+```
 
-http://localhost:8080
+### 1. Start the application
 
-## H2 Database
+Run in IntelliJ (Run button)  
+or via terminal:
+
+```bash
+./gradlew bootRun
+```
+
+### 2. Import weather data
+
+Open in browser:
+
+```bash
+http://localhost:8080/import-weather
+```
+
+### H2 Database
 
 H2 console is available at:
 
+```bash
 http://localhost:8080/h2-console
+```
 
 Use:
 
-* JDBC URL: jdbc:h2:mem:testdb
-* Username: sa
-* Password: (leave empty)
+- JDBC URL: jdbc:h2:mem:testdb
+- Username: sa
+- Password: (leave empty)
 
-## Scheduler Configuration
+### 3. Calculate delivery fee
+
+Example requests:
+
+```bash
+http://localhost:8080/delivery-fee?city=TARTU&vehicleType=BIKE
+```
+
+```bash
+http://localhost:8080/delivery-fee?city=TALLINN&vehicleType=CAR
+```
+
+Example Response
+
+```json
+{
+  "city": "TARTU",
+  "vehicleType": "BIKE",
+  "deliveryFee": 2.5
+}
+```
+
+Example error:
+
+```json
+{
+  "error": "No weather data found for city: TARTU"
+}
+```
+
+All errors are handled using a global exception handler.
+
+### Scheduler
 
 Scheduler cron is configured in application.properties:
 
@@ -73,66 +130,47 @@ weather.cron=0 15 * * * *
 
 Default behavior:
 
-* runs once every hour
-* at minute 15
+- runs once every hour
+- at minute 15
 
 For testing, the manual import endpoint can be used.
 
-## Manual Weather Import Endpoint
+## Business Logic
 
-GET /import-weather
+Delivery fee is calculated using:
 
-This endpoint triggers immediate weather data import from the external XML service.
+- Base fee depending on city
+- Extra fee based on air temperature
+- Extra fee based on wind speed
+- Extra fee based on weather phenomenon
+- Forbidden vehicle conditions
 
-Example:
+The system always uses the latest weather data per station.
 
-http://localhost:8080/import-weather
+## Supported Stations
 
-## Delivery Fee Endpoint
+- Tallinn → Tallinn-Harku
+- Tartu → Tartu-Tõravere
+- Pärnu → Pärnu
 
-GET /delivery-fee?city={CITY}&vehicleType={VEHICLE_TYPE}
+## Supported vehicles
 
-Supported cities:
+- CAR
+- SCOOTER
+- BIKE
 
-* TALLINN
-* TARTU
-* PARNU
+## Testing
 
-Supported vehicle types:
+Includes:
 
-* CAR
-* SCOOTER
-* BIKE
+- Service tests
+- Controller tests (MockMvc)
 
-Example requests:
+Run tests:
 
-http://localhost:8080/delivery-fee?city=TARTU&vehicleType=BIKE
-http://localhost:8080/delivery-fee?city=TALLINN&vehicleType=CAR
-
-Example response:
-
-{
-"city": "TARTU",
-"vehicleType": "BIKE",
-"deliveryFee": 2.5
-}
-
-Example error response:
-
-{
-"error": "Usage of selected vehicle type is forbidden"
-}
-
-## Business Logic Summary
-
-The delivery fee consists of:
-
-* regional base fee
-* extra fee based on air temperature
-* extra fee based on wind speed
-* extra fee based on weather phenomenon
-
-The calculation uses the latest weather data for the selected city.
+```bash
+./gradlew test
+```
 
 ## Project Structure
 
@@ -148,13 +186,20 @@ src/main/java/com/example/fujitsu
 
 ## Notes
 
-* Weather observation history is preserved in the database by inserting new rows on each import.
-* The scheduler uses a configurable cron expression.
-* During development, the manual /import-weather endpoint was used for faster testing.
+- H2 database is used (in-memory)
+- Scheduler keeps data up-to-date
+- Clean layered architecture
+- Error handling ensures stable API responses
 
 ## Possible Improvements
 
-* Add Swagger/OpenAPI documentation
-* Add unit and integration tests
-* Add startup import for initial weather loading
-* Store city separately in the database to avoid station name mapping issues
+- Add Swagger/OpenAPI documentation
+- Add startup import for initial weather loading
+- Store city separately in the database to avoid station name mapping issues
+
+## Design Decisions
+
+- Used H2 in-memory database for simplicity and quick setup
+- Implemented scheduler for automated weather updates
+- Separated business logic into service layer for testability
+- Used global exception handler for consistent error responses
